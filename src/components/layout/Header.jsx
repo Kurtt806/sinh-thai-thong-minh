@@ -4,7 +4,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export function Header({ onToggleSidebar }) {
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 px-6">
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 px-6 flex-shrink-0">
       <div className="flex items-center justify-between h-full">
         {/* Left side */}
         <div className="flex items-center space-x-4">

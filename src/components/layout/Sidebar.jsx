@@ -9,11 +9,11 @@ export function Sidebar({ collapsed = false, onToggle }) {
   
   return (
     <div className={cn(
-      'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300',
+      'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 flex flex-col',
       collapsed ? 'w-16' : 'w-64'
     )}>
       {/* Logo */}
-      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
         {!collapsed && (
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 bg-moss-600 rounded-lg flex items-center justify-center shadow-sm">
@@ -37,7 +37,7 @@ export function Sidebar({ collapsed = false, onToggle }) {
       </div>
       
       {/* Navigation */}
-      <nav className="mt-8 px-4">
+      <nav className="mt-8 px-4 flex-1">
         <div className="space-y-1">
           {MENU_ITEMS.map((item) => (
             <Link
@@ -61,7 +61,7 @@ export function Sidebar({ collapsed = false, onToggle }) {
       </nav>
       
       {/* User Section */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
             <Icon name="User" size={18} className="text-gray-600 dark:text-gray-400" />
