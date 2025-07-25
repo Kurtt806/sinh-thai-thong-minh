@@ -2,51 +2,182 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
+import { Modal } from '@/components/ui/Modal';
+import { AddTankModal } from '@/components/fish/AddTankModal';
+import { TankDetailModal } from '@/components/fish/TankDetailModal';
+import { FishTankCard } from '@/components/fish/FishTankCard';
 
 export function FishPage() {
-  const [fishTanks] = useState([
+  const [fishTanks, setFishTanks] = useState([
     {
       id: 1,
       name: 'Hồ Cá Chính',
-      dimensions: '120x60x50cm',
+      dimensions: { length: 120, width: 60, height: 50 },
       volume: 360,
       fishCount: 25,
       temperature: 26.5,
       ph: 7.2,
+      oxygen: 8.5,
       status: 'healthy',
-      fishTypes: ['Cá Vàng', 'Cá Neon', 'Cá Betta'],
+      fishTypes: [
+        { name: 'Cá Vàng', count: 10, health: 'good' },
+        { name: 'Cá Neon', count: 12, health: 'good' },
+        { name: 'Cá Betta', count: 3, health: 'excellent' }
+      ],
+      devices: {
+        filter: { status: 'on', lastMaintenance: '2025-07-20' },
+        heater: { status: 'auto', targetTemp: 26.5 },
+        light: { status: 'scheduled', schedule: '06:00-20:00' },
+        aerator: { status: 'on', intensity: 75 }
+      },
+      feeding: {
+        lastFed: '2025-07-24 08:00',
+        schedule: ['08:00', '18:00'],
+        foodType: 'Thức ăn tổng hợp'
+      },
+      waterChanges: [
+        { date: '2025-07-20', percentage: 25, notes: 'Thay nước định kỳ' },
+        { date: '2025-07-13', percentage: 30, notes: 'Vệ sinh filter' }
+      ],
+      alerts: []
     },
     {
       id: 2,
       name: 'Hồ Cá Cảnh',
-      dimensions: '80x40x40cm',
+      dimensions: { length: 80, width: 40, height: 40 },
       volume: 128,
       fishCount: 15,
       temperature: 25.8,
       ph: 7.0,
+      oxygen: 8.2,
       status: 'healthy',
-      fishTypes: ['Cá Thiên Thần', 'Cá Rồng'],
+      fishTypes: [
+        { name: 'Cá Thiên Thần', count: 8, health: 'good' },
+        { name: 'Cá Rồng', count: 7, health: 'excellent' }
+      ],
+      devices: {
+        filter: { status: 'on', lastMaintenance: '2025-07-18' },
+        heater: { status: 'auto', targetTemp: 26.0 },
+        light: { status: 'on', schedule: '07:00-19:00' },
+        aerator: { status: 'on', intensity: 80 }
+      },
+      feeding: {
+        lastFed: '2025-07-24 07:30',
+        schedule: ['07:30', '17:30'],
+        foodType: 'Thức ăn cao cấp'
+      },
+      waterChanges: [
+        { date: '2025-07-22', percentage: 20, notes: 'Thay nước hàng tuần' }
+      ],
+      alerts: [
+        { type: 'info', message: 'Sắp đến hạn thay nước', date: '2025-07-24' }
+      ]
     },
     {
       id: 3,
       name: 'Hồ Cá Nhỏ',
-      dimensions: '60x30x30cm',
+      dimensions: { length: 60, width: 30, height: 30 },
       volume: 54,
       fishCount: 8,
       temperature: 26.0,
       ph: 7.3,
+      oxygen: 8.0,
       status: 'healthy',
-      fishTypes: ['Cá Molly', 'Cá Guppy'],
+      fishTypes: [
+        { name: 'Cá Molly', count: 4, health: 'good' },
+        { name: 'Cá Guppy', count: 4, health: 'good' }
+      ],
+      devices: {
+        filter: { status: 'on', lastMaintenance: '2025-07-15' },
+        heater: { status: 'auto', targetTemp: 26.0 },
+        light: { status: 'manual', schedule: '08:00-18:00' },
+        aerator: { status: 'off', intensity: 0 }
+      },
+      feeding: {
+        lastFed: '2025-07-24 08:15',
+        schedule: ['08:00', '20:00'],
+        foodType: 'Thức ăn nhỏ'
+      },
+      waterChanges: [
+        { date: '2025-07-21', percentage: 30, notes: 'Vệ sinh toàn bộ' }
+      ],
+      alerts: []
     },
   ]);
 
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedTank, setSelectedTank] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
+  const handleAddTank = (newTank) => {
+    const tank = {
+      ...newTank,
+      id: Math.max(...fishTanks.map(t => t.id)) + 1,
+      status: 'healthy',
+      alerts: [],
+      waterChanges: []
+    };
+    setFishTanks([...fishTanks, tank]);
+    setShowAddModal(false);
+  };
+
+  const handleUpdateTank = (updatedTank) => {
+    setFishTanks(fishTanks.map(tank => 
+      tank.id === updatedTank.id ? updatedTank : tank
+    ));
+    setShowDetailModal(false);
+    setSelectedTank(null);
+  };
+
+  const handleDeleteTank = (tankId) => {
+    setFishTanks(fishTanks.filter(tank => tank.id !== tankId));
+    setShowDetailModal(false);
+    setSelectedTank(null);
+  };
+
   const handleFeedFish = (tankId) => {
-    console.log(`Cho cá ăn trong hồ ${tankId}`);
+    const now = new Date();
+    const timeString = now.toLocaleString('vi-VN');
+    
+    setFishTanks(fishTanks.map(tank => 
+      tank.id === tankId 
+        ? { ...tank, feeding: { ...tank.feeding, lastFed: timeString } }
+        : tank
+    ));
+    
+    console.log(`Đã cho cá ăn trong hồ ${tankId} lúc ${timeString}`);
   };
 
   const handleControlDevice = (tankId, device) => {
+    setFishTanks(fishTanks.map(tank => {
+      if (tank.id === tankId) {
+        const currentStatus = tank.devices[device].status;
+        const newStatus = currentStatus === 'on' ? 'off' : 'on';
+        
+        return {
+          ...tank,
+          devices: {
+            ...tank.devices,
+            [device]: { ...tank.devices[device], status: newStatus }
+          }
+        };
+      }
+      return tank;
+    }));
+    
     console.log(`Điều khiển ${device} trong hồ ${tankId}`);
   };
+
+  const handleViewDetails = (tank) => {
+    setSelectedTank(tank);
+    setShowDetailModal(true);
+  };
+
+  // Calculate stats
+  const totalFish = fishTanks.reduce((sum, tank) => sum + tank.fishCount, 0);
+  const avgTemperature = (fishTanks.reduce((sum, tank) => sum + tank.temperature, 0) / fishTanks.length).toFixed(1);
+  const avgPH = (fishTanks.reduce((sum, tank) => sum + tank.ph, 0) / fishTanks.length).toFixed(1);
+  const totalAlerts = fishTanks.reduce((sum, tank) => sum + tank.alerts.length, 0);
 
   return (
     <div className="space-y-6">
@@ -60,7 +191,7 @@ export function FishPage() {
             Theo dõi và chăm sóc các hồ cá của bạn
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setShowAddModal(true)}>
           <Icon name="Plus" size={16} className="mr-2" />
           Thêm Hồ Cá
         </Button>
@@ -73,7 +204,7 @@ export function FishPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Tổng số cá</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">48</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalFish}</p>
               </div>
               <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                 <Icon name="Fish" size={20} className="text-blue-600 dark:text-blue-400" />
@@ -87,7 +218,7 @@ export function FishPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Số hồ cá</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">3</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{fishTanks.length}</p>
               </div>
               <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                 <Icon name="Waves" size={20} className="text-green-600 dark:text-green-400" />
@@ -101,7 +232,7 @@ export function FishPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Nhiệt độ TB</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">26°C</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{avgTemperature}°C</p>
               </div>
               <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
                 <Icon name="Thermometer" size={20} className="text-orange-600 dark:text-orange-400" />
@@ -114,11 +245,11 @@ export function FishPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Độ pH TB</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">7.2</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Cảnh báo</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalAlerts}</p>
               </div>
-              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                <Icon name="Droplets" size={20} className="text-purple-600 dark:text-purple-400" />
+              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                <Icon name="AlertTriangle" size={20} className="text-red-600 dark:text-red-400" />
               </div>
             </div>
           </CardContent>
@@ -128,75 +259,38 @@ export function FishPage() {
       {/* Fish Tanks */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {fishTanks.map((tank) => (
-          <Card key={tank.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Icon name="Waves" size={20} className="mr-2 text-blue-600" />
-                {tank.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-600 dark:text-gray-400">Kích thước:</span>
-                  <p className="font-medium">{tank.dimensions}</p>
-                </div>
-                <div>
-                  <span className="text-gray-600 dark:text-gray-400">Thể tích:</span>
-                  <p className="font-medium">{tank.volume}L</p>
-                </div>
-                <div>
-                  <span className="text-gray-600 dark:text-gray-400">Số cá:</span>
-                  <p className="font-medium">{tank.fishCount}</p>
-                </div>
-                <div>
-                  <span className="text-gray-600 dark:text-gray-400">Nhiệt độ:</span>
-                  <p className="font-medium">{tank.temperature}°C</p>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Loại cá:</p>
-                <div className="flex flex-wrap gap-1">
-                  {tank.fishTypes.map((type, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs"
-                    >
-                      {type}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex space-x-2">
-                <Button
-                  size="sm"
-                  onClick={() => handleFeedFish(tank.id)}
-                  className="flex-1"
-                >
-                  <Icon name="Fish" size={16} className="mr-1" />
-                  Cho Ăn
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleControlDevice(tank.id, 'light')}
-                >
-                  <Icon name="Sun" size={16} />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleControlDevice(tank.id, 'filter')}
-                >
-                  <Icon name="Filter" size={16} />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <FishTankCard
+            key={tank.id}
+            tank={tank}
+            onFeedFish={handleFeedFish}
+            onControlDevice={handleControlDevice}
+            onViewDetails={handleViewDetails}
+          />
         ))}
       </div>
+
+      {/* Add Tank Modal */}
+      {showAddModal && (
+        <AddTankModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onSave={handleAddTank}
+        />
+      )}
+
+      {/* Tank Detail Modal */}
+      {showDetailModal && selectedTank && (
+        <TankDetailModal
+          isOpen={showDetailModal}
+          tank={selectedTank}
+          onClose={() => {
+            setShowDetailModal(false);
+            setSelectedTank(null);
+          }}
+          onSave={handleUpdateTank}
+          onDelete={handleDeleteTank}
+        />
+      )}
     </div>
   );
 }

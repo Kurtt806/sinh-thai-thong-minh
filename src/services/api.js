@@ -1,5 +1,5 @@
 // Base API configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 class ApiService {
   constructor() {
@@ -13,9 +13,20 @@ class ApiService {
   setAuthToken(token) {
     if (token) {
       this.headers.Authorization = `Bearer ${token}`;
+      localStorage.setItem('token', token);
     } else {
       delete this.headers.Authorization;
+      localStorage.removeItem('token');
     }
+  }
+
+  // Load token from localStorage
+  loadToken() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.setAuthToken(token);
+    }
+    return token;
   }
 
   // Generic request method
@@ -27,15 +38,20 @@ class ApiService {
     };
 
     try {
+      console.log(`🌐 API Request: ${config.method || 'GET'} ${url}`);
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.text();
+        console.error('API Error:', response.status, errorData);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorData}`);
       }
       
-      return await response.json();
+      const data = await response.json();
+      console.log('✅ API Response:', data);
+      return data;
     } catch (error) {
-      console.error('API Request failed:', error);
+      console.error('❌ API Request failed:', error);
       throw error;
     }
   }
