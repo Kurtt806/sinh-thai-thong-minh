@@ -2,12 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 import { Button } from '@/components/ui/Button';
 
-export function DeviceControlCard({ aquarium }) {
-  const devices = [
+export function DeviceControlCard({ devices, onDeviceControl }) {
+  const controlDevices = [
     {
       id: 'feeder',
       name: 'Máy Cho Ăn',
-      icon: 'Fish',
+      icon: 'Coffee',
       status: 'active',
       lastAction: 'Cho ăn lúc 14:30',
       controls: ['Cho ăn ngay', 'Lên lịch'],
@@ -58,12 +58,12 @@ export function DeviceControlCard({ aquarium }) {
       <CardHeader>
         <CardTitle className="flex items-center">
           <Icon name="Settings" size={20} className="mr-2 text-moss-600 dark:text-moss-400" />
-          <span className="text-gray-900 dark:text-gray-100">Điều khiển thiết bị - {aquarium?.name || 'Hồ cá 1'}</span>
+          <span className="text-gray-900 dark:text-gray-100">Điều khiển thiết bị</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {devices.map((device) => (
+          {controlDevices.map((device) => (
             <div key={device.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
